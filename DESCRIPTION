@@ -1,0 +1,18 @@
+Package: lifeTableProcessing
+Title: Functions for Creating Life Tables from Data
+Version: 0.0.0.9000
+Authors@R: 
+  person("Spencer", "Pease", , "spease@uw.edu", role = c("aut", "cre"))
+Description:
+  Life tables can be constructed from mortality and population data. This
+  package implements functions to process that data into life tables under
+  different methods and assumptions.
+License: BSD_3_clause + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    data.table,
+    demCore (>= 0.0.0.9000)
+Remotes: 
+    ihmeuw-demographics/demCore
