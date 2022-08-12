@@ -12,10 +12,13 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: 
+    assertable,
     data.table,
-    demCore (>= 0.0.0.9000)
+    demCore (>= 0.0.0.9000),
+    demUtils (>= 0.0.0.9000)
 Remotes: 
-    ihmeuw-demographics/demCore
+    ihmeuw-demographics/demCore,
+    ihmeuw-demographics/demUtils
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
