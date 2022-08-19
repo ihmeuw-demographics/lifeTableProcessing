@@ -231,7 +231,7 @@ iterate_qx <- function(dt, ax_params, id_vars, n_iterations = 50) {
 
   # calculate ax, lx, mx, dx
   dt_solved <- gen_ax_from_qx(dt_solved, ax_params)
-  dt_solved[, mx := ltcore::qx_ax_to_mx(qx, ax, age_length)]
+  dt_solved[, mx := demCore::qx_ax_to_mx(qx, ax, age_length)]
   setkeyv(dt_solved, id_vars)
   dt_solved[, lx := cumprod(shift(1 - qx, type = "lag", fill = 1))]
   dt_solved[, dx := lx * qx]
