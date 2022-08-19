@@ -15,7 +15,8 @@ Imports:
     assertable,
     data.table,
     demCore (>= 0.0.0.9000),
-    demUtils (>= 0.0.0.9000)
+    demUtils (>= 0.0.0.9000),
+    readr
 Remotes: 
     ihmeuw-demographics/demCore,
     ihmeuw-demographics/demUtils
