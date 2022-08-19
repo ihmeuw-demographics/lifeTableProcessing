@@ -170,7 +170,7 @@ hmd_extension_ax_qx[, `:=`(
 ```
 
 ```{r, eval=TRUE, echo=FALSE}
-knitr::kable(lifeTableProcessing::hmd_extension_qx_mx)
+knitr::kable(lifeTableProcessing::hmd_extension_ax_qx)
 ```
 
 
