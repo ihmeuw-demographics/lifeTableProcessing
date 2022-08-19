@@ -1,0 +1,174 @@
+---
+title: "Building a Life Table"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(data.table)
+library(lifeTableProcessing)
+
+```
+
+In this article we will walk through the steps of creating a life table from
+input deaths and population data, including how to extend a life table to a
+higher open age interval using an iterative method.
+
+# Loading data
+
+We begin by loading data for a single location-year. As an example, we will use
+USA males in 2000 in 5-year age groups from HMD, initially collapsed to a lower
+open age interval to show the effects of extension later
+
+```{r}
+lt_id_cols <- c("hmd_loc_id", "year", "source_type", "sex")
+id_cols <- c(lt_id_cols, "age_start", "age_end")
+
+open_age <- 110
+
+lt <- collapse_open_age(
+  lifeTableProcessing::hmd_vr_pop_usa_males_2000, 
+  open_age = 70
+)
+
+```
+
+We will also load regression parameters created from HMD life tables so that we
+can create an initial set of life table parameters at higher ages to iterate
+
+```{r}
+coef_qx_diff <- lifeTableProcessing::hmd_extension_qx_diff
+coef_ax_mx <- lifeTableProcessing::hmd_extension_ax_mx
+coef_ax_qx <- lifeTableProcessing::hmd_extension_ax_qx
+```
+
+# Inital Life Table
+
+From deaths and population, we can create an initial life table using naive
+assumptions about $a_x$:
+
+```{r}
+lt[, mx := deaths / population]
+
+lt[, ax := (age_end - age_start) / 2]
+demCore::gen_u5_ax_from_mx(lt, id_cols)
+lt[is.infinite(age_end), ax := demCore::mx_to_ax(mx, age_end - age_start)]
+
+lt[, qx := demCore::mx_ax_to_qx(mx, ax, age_end - age_start)]
+demCore::gen_lx_from_qx(lt, id_cols)
+demCore::gen_dx_from_lx(lt, id_cols)
+```
+
+```{r, echo=FALSE}
+knitr::kable(lt)
+```
+
+
+Then we can achieve better estimates of $a_x$ by recalculating $a_x$ from $d_x$,
+recalculating $d_x$, and iterating until agreement is reached:
+
+```{r}
+lt_ax_prep <- demCore::iterate_ax(lt, id_cols)
+```
+
+```{r, echo=FALSE}
+knitr::kable(lt_ax_prep)
+```
+
+# Extending the Life Table
+
+Now we focus on extending the life table to the desired open age. We begin by
+creating an initial set of $q_x$ values for ages between the input and desired
+open age using regression parameters based on the difference in 
+logit-transformed $q_x$ values
+
+```{r}
+lt_extended <- extend_qx_diff(
+  lt_ax_prep[!is.infinite(age_end), c(..id_cols, "mx", "ax", "qx")],
+  coef_qx_diff,
+  lt_id_cols
+)
+
+lt_extended[
+  is.na(mx) & age_start >= 5,
+  mx := demCore::qx_ax_to_mx(qx, ax, age_end - age_start)
+]
+
+demCore::gen_lx_from_qx(lt_extended, id_cols)
+demCore::gen_dx_from_lx(lt_extended, id_cols, assert_na = FALSE)
+lt_extended[is.na(dx), dx := lx * qx]
+```
+
+```{r, echo=FALSE}
+knitr::kable(lt_extended)
+```
+
+
+# Iterate to an optimal extension
+
+With an initial projection of $q_x$, we can now iteratively solve for the ideal
+extension by calculating life expectancy from the extended ages and comparing
+it to the life expectancy at the original open age interval
+
+```{r}
+lt_extended[
+  lt_ax_prep[is.infinite(age_end)],
+  `:=`(
+    terminal_age_start = i.age_start,
+    mx_term = i.mx
+  ),
+  on = lt_id_cols
+]
+
+lt_extended[, age_length := age_end - age_start]
+lt_extended[, age_end := NULL]
+setnames(lt_extended, "age_start", "age")
+setnames(coef_ax_qx, "age_start", "age")
+
+iteration_results <- iterate_qx(
+  dt = lt_extended,
+  ax_params = coef_ax_qx[, -"age_end"],
+  id_vars = c(lt_id_cols, "age"),
+  n_iterations = 50
+)
+
+lt_iterated <- copy(iteration_results[[1]])
+iteration_info <- copy(iteration_results[[2]])
+
+setnames(lt_iterated, "age", "age_start")
+lt_iterated[, age_end := shift(age_start, n = 1, type = "lead")]
+lt_iterated[age_start == max(age_start), age_end := open_age]
+setcolorder(lt_iterated, id_cols)
+```
+
+```{r, echo=FALSE}
+knitr::kable(lt_iterated)
+```
+
+# Add New Open Age Interval
+
+Finally, all that remains is to calculate the life table parameters for the
+new open age interval
+
+```{r}
+lt_final <- rbind(
+  lt_iterated,
+  lt_iterated[1, ..lt_id_cols][, `:=`(age_start = open_age, age_end = Inf, qx = 1)],
+  fill = TRUE
+)
+
+demCore::gen_lx_from_qx(lt_final, id_cols)
+demCore::gen_dx_from_lx(lt_final, id_cols)
+```
+
+```{r, echo=FALSE}
+knitr::kable(lt_final)
+```
+
