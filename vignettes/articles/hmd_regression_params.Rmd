@@ -1,0 +1,189 @@
+---
+title: "Extending Life Tables with HMD Regression Parameters"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = FALSE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(arrow)
+library(data.table)
+library(lme4)
+library(lifeTableProcessing)
+
+cfg <- yaml::read_yaml("~/lifeTableProcessing.yml")
+```
+
+Some methods of extending a life table to higher open age intervals (such as 
+iterative methods) require an initial set of life table parameters at these
+older ages. One method of getting this information is by applying regression
+parameters calculated from a known quality set of life tables with data out to
+the desired open age already available. Here, we use life tables from HMD
+to estimate a set of regression parameters that can be used to extend $q_x$ and 
+$a_x$ to higher age groups.
+
+# Preparing the Data
+
+First, we must load HMD life table data
+
+```{r}
+id_vars <- c("hmd_loc_id", "year", "sex")
+
+hmd_lts <- read_parquet(
+  fs::path(cfg$dir_proj, "data/prepped/hmd_lifetables_5x1.parquet"),
+  col_select = c(all_of(id_vars), "age_start", "age_end", "mx", "ax", "qx")
+)
+
+```
+
+Then we can subset to the life tables we want to include in this analysis,
+dropping location-years that should not be used to inform others
+
+```{r}
+hmd_lts <- hmd_lts[
+  year >= 1950 &
+    !(hmd_loc_id == "TWN" & year < 1980) &
+    !(hmd_loc_id == "EST" & year > 2000) &
+    !(hmd_loc_id %in% c("UKR", "BLR", "BGR") & year < 1970) &
+    !(hmd_loc_id %in% c("LVA", "LTV") & year %between% c(1958, 1970)) &
+    !(hmd_loc_id == "IRL" & year %between% c(1949, 1986)) &
+    !(hmd_loc_id == "PRT" & year %between% c(1939, 1971)) &
+    !(hmd_loc_id == "RUS" & year %between% c(1958, 1970)) &
+    !(hmd_loc_id == "SVK" & year %between% c(1949, 1962)) &
+    !(hmd_loc_id == "ESP" & year %between% c(1907, 1961))
+]
+
+```
+
+Finally, we create computed variable for use in the different regressions
+
+```{r}
+hmd_lts[, mx_sq := mx^2]
+hmd_lts[, qx_sq := qx^2]
+
+hmd_lts[, qx_logit := demUtils::logit(qx)]
+
+hmd_lts[
+  j = `:=`(
+    qx_logit_diff_to = qx_logit - shift(qx_logit, type = "lag"),
+    qx_logit_diff_from = shift(qx_logit, type = "lead") - qx_logit
+  ),
+  by = id_vars
+]
+
+```
+
+
+# Regressions
+
+## Extend $q_x$ Using Logit Differences
+
+First we get the $\text{logit}(q_x)$ differences from the prior and to the next
+age group for age groups starting between 65 and 100:
+
+```{r}
+model_formula <- qx_logit_diff_from ~ qx_logit_diff_to + (1 | hmd_loc_id)
+
+hmd_extension_qx_diff <- hmd_lts[
+  age_start %between% c(65, 100) &
+    !is.na(qx_logit_diff_to) & 
+    !is.na(qx_logit_diff_from),
+  j = .(fit = list(lme4::lmer(formula = model_formula, data = .SD))),
+  by = .(sex, age_start, age_end)
+]
+
+hmd_extension_qx_diff[, `:=`(
+  intercept = unlist(lapply(fit, \(f) fixef(f)[["(Intercept)"]])),
+  slope = unlist(lapply(fit, \(f) fixef(f)[["qx_logit_diff_to"]])),
+  fit = NULL
+)]
+
+```
+
+```{r, eval=TRUE, echo=FALSE}
+knitr::kable(lifeTableProcessing::hmd_extension_qx_diff)
+```
+
+
+## Extend $a_x$ using $m_x$
+
+Here we fit a model:
+
+$$
+a_x \sim 1 + m_x + (m_x)^2
+$$
+
+for age groups starting between 65 and 105:
+
+```{r}
+hmd_extension_ax_mx <- hmd_lts[
+  age_start %between% c(65, 105),
+  j = .(fit = list(lm(ax ~ mx + mx_sq, data = .SD))),
+  by = .(sex, age_start, age_end)
+]
+
+hmd_extension_ax_mx[, `:=`(
+  par_con = unlist(lapply(fit, \(f) coef(f)[["(Intercept)"]])),
+  par_mx = unlist(lapply(fit, \(f) coef(f)[["mx"]])),
+  par_smx = unlist(lapply(fit, \(f) coef(f)[["mx_sq"]])),
+  fit = NULL
+)]
+
+```
+
+```{r, eval=TRUE, echo=FALSE}
+knitr::kable(lifeTableProcessing::hmd_extension_ax_mx)
+```
+
+
+## Extend $a_x$ using $q_x$
+
+Here we fit a model:
+
+$$
+a_x \sim 1 + q_x + (q_x)^2
+$$
+
+for age groups starting between 65 and 105:
+
+```{r}
+hmd_extension_ax_qx <- hmd_lts[
+  age_start %between% c(65, 105),
+  j = .(fit = list(lm(ax ~ qx + qx_sq, data = .SD))),
+  by = .(sex, age_start, age_end)
+]
+
+hmd_extension_ax_qx[, `:=`(
+  par_con = unlist(lapply(fit, \(f) coef(f)[["(Intercept)"]])),
+  par_qx = unlist(lapply(fit, \(f) coef(f)[["qx"]])),
+  par_sqx = unlist(lapply(fit, \(f) coef(f)[["qx_sq"]])),
+  fit = NULL
+)]
+
+```
+
+```{r, eval=TRUE, echo=FALSE}
+knitr::kable(lifeTableProcessing::hmd_extension_qx_mx)
+```
+
+
+```{r, include=FALSE}
+
+# Run this if you want to update the data included in the package
+
+usethis::use_data(
+  hmd_extension_qx_diff,
+  hmd_extension_ax_mx,
+  hmd_extension_ax_qx,
+  overwrite = TRUE
+)
+
+```
+

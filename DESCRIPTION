@@ -11,15 +11,26 @@ License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
-Imports: 
+Imports:
     assertable,
     data.table,
     demCore (>= 0.0.0.9000),
     demUtils (>= 0.0.0.9000),
+    fs,
     readr
-Remotes: 
+Remotes:
     ihmeuw-demographics/demCore,
     ihmeuw-demographics/demUtils
-Suggests: 
-    testthat (>= 3.0.0)
+Suggests:
+    arrow,
+    dplyr,
+    knitr,
+    lme4,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    yaml
 Config/testthat/edition: 3
+VignetteBuilder: knitr
+Depends:
+    R (>= 4.2)
+LazyData: true
