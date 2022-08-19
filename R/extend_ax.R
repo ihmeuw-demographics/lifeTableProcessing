@@ -8,12 +8,12 @@
 #' @export
 extend_ax <- function(empir_lt, hmd_ax_results) {
 
-  empir_lt <- data.table::copy(empir_lt)
+  empir_lt <- copy(empir_lt)
 
   empir_lt[
     hmd_ax_results,
     ax := i.par_mx * mx + i.par_smx * (mx ^ 2) + i.par_con,
-    on = c("sex", "age_start")
+    on = c("sex", "age_start", "age_end")
   ]
 
   return(empir_lt)
