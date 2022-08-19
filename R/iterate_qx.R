@@ -9,7 +9,7 @@
 #' @param ax_params \[`data.table()`\]\cr
 #'   Parameters for qx --> ax conversion (originally from MLT process).
 #'   Columns: 'age', 'sex', 'par_con', 'par_qx', 'par_sqx'. Regression equation
-#'   is ax = par_con + par_qx * qx + par_sqx * qx^2.
+#'   is \eqn{ax = par_con + par_qx * qx + par_sqx * qx^2}.
 #' @param id_vars \[`character()`\]\cr
 #'   ID variables that uniquely identify each observation in `dt`. Must include
 #'   'age'.

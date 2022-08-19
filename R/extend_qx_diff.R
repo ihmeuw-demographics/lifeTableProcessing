@@ -1,5 +1,9 @@
 #' Extend qx up to age 105 using HMD regression parameters
-#' logit(5q{x+5}) - logit(5qx) = B0 + B1*[logit(5qx) - logit(5q{x-5})] + location RE
+#'
+#' \deqn{
+#' logit({}_{5}q_{x+5}) - logit({}_{5}q_x) = \beta_0 + \beta_1 * (logit({}_{5}q_x) - logit({}_{5}q{x-5})) + \text{location}_{RE}
+#' }
+#'
 #' Recursive prediction
 #'
 #' @param empir_lt data.table with columns: ihme_loc_id, sex, year, age (numeric), mx, ax
