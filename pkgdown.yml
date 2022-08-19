@@ -1,0 +1,12 @@
+pandoc: 2.14.2
+pkgdown: 2.0.6
+pkgdown_sha: ~
+articles:
+  build_lifetable: build_lifetable.html
+  hmd_regression_params: hmd_regression_params.html
+  prep_hmd: prep_hmd.html
+last_built: 2022-08-19T19:20Z
+urls:
+  reference: https://ihmeuw-demographics.github.io/lifeTableProcessing/reference
+  article: https://ihmeuw-demographics.github.io/lifeTableProcessing/articles
+
