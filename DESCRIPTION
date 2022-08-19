@@ -34,3 +34,4 @@ VignetteBuilder: knitr
 Depends:
     R (>= 4.2)
 LazyData: true
+URL: https://ihmeuw-demographics.github.io/lifeTableProcessing/
