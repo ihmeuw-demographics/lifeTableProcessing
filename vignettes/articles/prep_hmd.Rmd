@@ -1,0 +1,115 @@
+---
+title: "Preparing HMD Data"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = FALSE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(data.table)
+library(lifeTableProcessing)
+
+cfg <- yaml::read_yaml("~/lifeTableProcessing.yml")
+```
+
+# Loading HMD Data
+
+We will be working with HMD data by statistic (meaning all countries) located at
+https://mortality.org/Data/ZippedDataFiles. You will need to register an account
+with HMD before being able to access this data. Specifically, we need:
+
+* Period death counts
+* Period population estimates
+* Period Life tables (female and male)
+
+We need the **5x1** data, meaning "five year age group by single year time
+interval". After extracting the data, you should have a set of directories like:
+
+```
+data/raw
+├── Deaths_5x1
+├── fltper_5x1
+├── mltper_5x1
+└── Population5
+```
+
+where each directory contains files for each location in HMD.
+
+To load the data, run:
+
+```{r}
+deaths_5x1 <- prep_hmd_deaths_5x1(fs::path(cfg$dir_proj, "data/raw/Deaths_5x1"))
+
+pop_5x1 <- prep_hmd_pop_5x1(fs::path(cfg$dir_proj, "data/raw/Population5"))
+
+lt_5x1 <- prep_hmd_period_lt_5x1(
+  dir_input_male = fs::path(cfg$dir_proj, "data/raw/mltper_5x1"),
+  dir_input_female = fs::path(cfg$dir_proj, "data/raw/fltper_5x1")
+)
+
+```
+
+# Preparing the Data
+
+In order to use the deaths and population data in _lifeTableProcessing_, we
+need to apply some additional formatting:
+
+```{r}
+dt_hmd <- merge(
+  deaths_5x1,
+  pop_5x1,
+  by = c("hmd_loc_id", "year", "sex", "age_start", "age_end"),
+  all = TRUE
+)
+
+dt_hmd[, data_origin := "hmd_5x1"]
+dt_hmd[, source_type := "VR"]
+
+setcolorder(dt_hmd, c("data_origin", "source_type"))
+
+```
+
+We also want to only include data starting from 1950, exclude any
+location-years with boundary changes, and exclude and incomplete data. With
+this final subset of data, we can calculate a mortality rate:
+
+```{r}
+dt_hmd_sub <- dt_hmd[
+  year >= 1950 &
+    is.na(territory_change_status) &
+    !is.na(deaths) &
+    !is.na(population),
+  -c("territory_change_status")
+]
+
+dt_hmd_sub[, mx := deaths / population]
+```
+
+# Saving the results
+
+Prepared data can be saved in whatever way is convenient, but other examples
+in this package assume the deaths and population data is saved as an 
+[Arrow Dataset](https://arrow.apache.org/docs/r/articles/dataset.html).
+
+```{r}
+arrow::write_dataset(
+  dataset = dt_hmd_sub,
+  path = fs::path(cfg$dir_proj, "data/prepped/input_vr_pop"),
+  format = "parquet",
+  partitioning = "data_origin"
+)
+
+arrow::write_parquet(
+  lt_5x1,
+  fs::path(cfg$dir_proj, "data/prepped/hmd_lifetables_5x1.parquet")
+)
+
+```
+
