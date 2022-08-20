@@ -5,7 +5,7 @@ articles:
   build_lifetable: build_lifetable.html
   hmd_regression_params: hmd_regression_params.html
   prep_hmd: prep_hmd.html
-last_built: 2022-08-20T05:52Z
+last_built: 2022-08-20T05:55Z
 urls:
   reference: https://ihmeuw-demographics.github.io/lifeTableProcessing/reference
   article: https://ihmeuw-demographics.github.io/lifeTableProcessing/articles
