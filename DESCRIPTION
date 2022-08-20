@@ -17,6 +17,7 @@ Imports:
     demCore (>= 0.0.0.9000),
     demUtils (>= 0.0.0.9000),
     fs,
+    ggplot2,
     readr
 Remotes:
     ihmeuw-demographics/demCore,
