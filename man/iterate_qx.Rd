@@ -2,19 +2,18 @@
 % Please edit documentation in R/iterate_qx.R
 \name{iterate_qx}
 \alias{iterate_qx}
-\title{Iterate terminal qx}
+\title{Iterate old age qx}
 \usage{
 iterate_qx(dt, ax_params, id_vars, n_iterations = 50)
 }
 \arguments{
 \item{dt}{[\code{data.table()}]\cr
-Life tables with variables: 'ihme_loc_id', 'year', 'source_name', 'sex',
-'age', 'age_length', 'dx', 'ax', 'qx', 'terminal_age_start', 'mx_term'}
+Life tables with variables in \code{id_vars} plus: 'age_length', 'dx',
+'ax', 'qx', 'terminal_age_start', 'mx_term'.}
 
 \item{ax_params}{[\code{data.table()}]\cr
-Parameters for qx --> ax conversion (originally from MLT process).
-Columns: 'age', 'sex', 'par_con', 'par_qx', 'par_sqx'. Regression equation
-is \eqn{ax = par_con + par_qx * qx + par_sqx * qx^2}.}
+Parameters for qx to ax conversion.
+Columns: 'age', 'sex', 'par_con', 'par_qx', 'par_sqx'.}
 
 \item{id_vars}{[\code{character()}]\cr
 ID variables that uniquely identify each observation in \code{dt}. Must include
@@ -28,6 +27,12 @@ Number of iterations to run.}
 Life tables with age-specific old-age qx scaled to align with terminal mx.
 }
 \description{
-Iterate terminal qx & lx values to minimize the difference to
-observed terminal mx
+Solve for an optimal extension of qx values to higher ages by comparing
+projected life expectancy to input open-age life expectancy.
+}
+\details{
+This method involves calculating ax values based on regression parameters
+of the formula:
+
+\deqn{ax \sim par_con + par_qx * q_x + par_sqx * {q_x}^2}
 }

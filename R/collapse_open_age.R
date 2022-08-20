@@ -12,9 +12,8 @@
 #'
 #' @return Life table with new open age interval, or original life table if the
 #'   original open age is lower than the given open age.
-#' @export
 #'
-#' @examples
+#' @export
 collapse_open_age <- function(lt,
                               open_age,
                               catch_lower_input = FALSE) {
