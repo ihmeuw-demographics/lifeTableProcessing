@@ -7,9 +7,9 @@
 extend_ax(empir_lt, hmd_ax_results)
 }
 \arguments{
-\item{empir_lt}{data.table with columns: ihme_loc_id, sex, year, age (numeric), mx, ax}
+\item{empir_lt}{data.table with columns: ihme_loc_id, sex, year, age_start, age_end, mx, ax}
 
-\item{hmd_ax_results}{data.table with variables par_mx, par_smx, par_con, sex, age}
+\item{hmd_ax_results}{data.table with variables par_mx, par_smx, par_con, sex, age_start, age_end}
 }
 \value{
 returns empir_lt with the same variables, but modified values for ax for ages 75 and above

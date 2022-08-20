@@ -14,7 +14,7 @@ Life tables with variables: 'ihme_loc_id', 'year', 'source_name', 'sex',
 \item{ax_params}{[\code{data.table()}]\cr
 Parameters for qx --> ax conversion (originally from MLT process).
 Columns: 'age', 'sex', 'par_con', 'par_qx', 'par_sqx'. Regression equation
-is ax = par_con + par_qx * qx + par_sqx * qx^2.}
+is \eqn{ax = par_con + par_qx * qx + par_sqx * qx^2}.}
 
 \item{id_vars}{[\code{character()}]\cr
 ID variables that uniquely identify each observation in \code{dt}. Must include
