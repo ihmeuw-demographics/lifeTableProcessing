@@ -8,6 +8,13 @@
 \description{
 Life tables can be constructed from mortality and population data. This package implements functions to process that data into life tables under different methods and assumptions.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://ihmeuw-demographics.github.io/lifeTableProcessing/}
+}
+
+}
 \author{
 \strong{Maintainer}: Spencer Pease \email{spease@uw.edu}
 
