@@ -28,6 +28,9 @@
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/news/index.html</loc>
   </url>
   <url>
+    <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/calculate_kt_params.html</loc>
+  </url>
+  <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/check_solution.html</loc>
   </url>
   <url>
@@ -38,6 +41,9 @@
   </url>
   <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/extend_qx_diff.html</loc>
+  </url>
+  <url>
+    <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/extend_qx_kt.html</loc>
   </url>
   <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/get_open_age.html</loc>
@@ -55,7 +61,13 @@
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/load_raw_hmd_files.html</loc>
   </url>
   <url>
+    <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/model_kt_qx.html</loc>
+  </url>
+  <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/plot_lifetable.html</loc>
+  </url>
+  <url>
+    <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/predict_kt_qx.html</loc>
   </url>
   <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/prep_hmd.html</loc>
@@ -65,5 +77,8 @@
   </url>
   <url>
     <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/solve_qx.html</loc>
+  </url>
+  <url>
+    <loc>https://ihmeuw-demographics.github.io/lifeTableProcessing/reference/sse_kt_qx.html</loc>
   </url>
 </urlset>
